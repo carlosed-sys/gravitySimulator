@@ -4,4 +4,7 @@
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<UseWindowsForms>true</UseWindowsForms>
 	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="MySqlConnector" Version="2.4.0" />
+	</ItemGroup>
 </Project>

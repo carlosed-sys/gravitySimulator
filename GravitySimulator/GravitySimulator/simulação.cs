@@ -6,8 +6,9 @@ using System.Windows.Forms;
 
 internal class JanelaSimulador : Form
 {
-    private Universo universo;
-    private System.Windows.Forms.Timer timer;
+    private readonly Universo universo;
+    private readonly Action<int> avancar;
+    private readonly System.Windows.Forms.Timer timer;
     private int iteracaoAtual = 0;
 
     
@@ -28,9 +29,10 @@ internal class JanelaSimulador : Form
         Color.Yellow, Color.MediumPurple, Color.Tomato, Color.Aquamarine
     };
 
-    public JanelaSimulador(Universo universo)
+    public JanelaSimulador(Universo universo, Action<int> avancar)
     {
         this.universo = universo;
+        this.avancar = avancar;
 
         Text = "Simulador Gravitacional 2D";
         ClientSize = new Size(800, 800);
@@ -46,16 +48,23 @@ internal class JanelaSimulador : Form
     }
 
    
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+            timer?.Dispose();
+        base.Dispose(disposing);
+    }
+
     private void Timer_Tick(object sender, EventArgs e)
     {
         if (!pausado && iteracaoAtual < universo.QtdIteracoes)
         {
             for (int i = 0; i < passosPorQuadro && iteracaoAtual < universo.QtdIteracoes; i++)
             {
-                universo.Passo();
+                avancar(iteracaoAtual + 1);
                 iteracaoAtual++;
+                GuardarRastro();
             }
-            GuardarRastro();
         }
         Invalidate(); 
     }
@@ -100,7 +109,7 @@ internal class JanelaSimulador : Form
 
         foreach (Corpo c in universo.Corpos)
         {
-            Color cor = cores[Math.Abs(c.Nome.GetHashCode()) % cores.Length];
+            Color cor = cores[(int)((uint)c.Nome.GetHashCode() % (uint)cores.Length)];
 
             // Rastro (linha da trajetoria)
             List<Vetor> lista = rastros[c.Nome];

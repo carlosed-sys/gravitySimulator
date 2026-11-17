@@ -1,103 +1,132 @@
-﻿using System;
-using System.IO;
-using System.Linq;
+using System;
 using System.Windows.Forms;
+using MySqlConnector;
 
-internal class Program
+internal static class Program
 {
-    // Pasta onde ficam todos os universos salvos (fica do lado do .exe)
-    private static string pasta = Path.Combine(AppContext.BaseDirectory, "Salvos");
+    private const int MaximoCorpos = 400;
 
-    [STAThread] 
+    [STAThread]
     private static void Main()
     {
-        Directory.CreateDirectory(pasta); 
+        Application.SetUnhandledExceptionMode(UnhandledExceptionMode.ThrowException);
 
-        Universo universo;
-
-        Console.WriteLine("1 - Novo universo aleatorio");
-        Console.WriteLine("2 - Carregar universo salvo");
-        Console.Write("Opcao: ");
-        string opcao = Console.ReadLine();
-
-        if (opcao == "2")
+        try
         {
-            universo = EscolherSalvo();
-            if (universo == null) return; 
+            Console.WriteLine("1 - Novo universo aleatório");
+            Console.WriteLine("2 - Replay de uma simulação");
+            Console.Write("Opção: ");
+            switch (Console.ReadLine())
+            {
+                case "1":
+                    Simular();
+                    break;
+                case "2":
+                    Reproduzir();
+                    break;
+            }
         }
-        else
+        catch (MySqlException erro)
         {
-            Console.Write("Quantidade de corpos: ");
-            int qtd = int.Parse(Console.ReadLine());
-            Console.Write("Quantidade de iteracoes: ");
-            int iter = int.Parse(Console.ReadLine());
-            Console.Write("Tempo entre iteracoes (s): ");
-            double dt = double.Parse(Console.ReadLine());
+            Console.WriteLine("Erro ao acessar o MySQL: " + erro.Message);
+        }
+    }
 
-            universo = new Universo();
-            universo.GerarAleatorio(qtd, iter, dt);
+    private static void Simular()
+    {
+        Console.Write("Quantidade de corpos (1 a 400): ");
+        if (!int.TryParse(Console.ReadLine(), out int corpos) || corpos < 1 || corpos > MaximoCorpos)
+        {
+            Console.WriteLine("Quantidade de corpos inválida.");
+            return;
+        }
 
-           
-            Salvar(universo, "inicial");
-            Console.WriteLine();
+        Console.Write("Quantidade de iterações: ");
+        if (!int.TryParse(Console.ReadLine(), out int iteracoes) || iteracoes < 1 || iteracoes == int.MaxValue)
+        {
+            Console.WriteLine("Quantidade de iterações inválida.");
+            return;
+        }
+
+        Console.Write("Tempo entre iterações (s): ");
+        if (!double.TryParse(Console.ReadLine(), out double dt) || !double.IsFinite(dt) || dt <= 0)
+        {
+            Console.WriteLine("Intervalo inválido.");
+            return;
         }
 
         Console.Write("Ver em modo visual? (s/n): ");
-        if (Console.ReadLine().ToLower() == "s")
+        bool modoVisual = string.Equals(Console.ReadLine(), "s", StringComparison.OrdinalIgnoreCase);
+        Universo universo = new Universo();
+        universo.GerarAleatorio(corpos, iteracoes, dt);
+
+        using BancoSimulacoes banco = new BancoSimulacoes();
+        using MySqlTransaction transacao = banco.IniciarGravacao(universo, out long id);
+        banco.GravarQuadro(transacao, id, 0, universo.Corpos);
+        int ultimaIteracao = 0;
+
+        void Avancar(int iteracao)
         {
-            
-            Application.Run(new JanelaSimulador(universo));
+            universo.Passo();
+            banco.GravarQuadro(transacao, id, iteracao, universo.Corpos);
+            ultimaIteracao = iteracao;
+        }
+
+        if (modoVisual)
+        {
+            using JanelaSimulador janela = new JanelaSimulador(universo, Avancar);
+            Application.Run(janela);
         }
         else
         {
-            universo.Simular(); 
+            universo.Exibir(0);
+            for (int i = 1; i <= iteracoes; i++)
+            {
+                Avancar(i);
+                universo.Exibir(i);
+            }
         }
 
-        
-        Salvar(universo, "final");
+        // Se a janela fechar antes do fim, o replay vai até o último quadro gravado.
+        banco.ConcluirGravacao(transacao, id, ultimaIteracao);
+        Console.WriteLine("Simulação salva no MySQL com ID " + id);
     }
 
-    
-    private static void Salvar(Universo universo, string prefixo)
+    private static void Reproduzir()
     {
-        string nome = prefixo + "_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
-        string caminho = Path.Combine(pasta, nome);
-
-        Armazenamento arq = new ArmazenamentoTxt(caminho);
-        arq.Salvar(universo);
-
-        Console.WriteLine("Universo salvo em: " + caminho);
-    }
-
-    // Lista os arquivos da pasta Salvos 
-    private static Universo EscolherSalvo()
-    {
-        string[] arquivos = Directory.GetFiles(pasta, "*.txt")
-                                     .OrderByDescending(f => File.GetLastWriteTime(f))
-                                     .ToArray();
-
-        if (arquivos.Length == 0)
+        using BancoSimulacoes banco = new BancoSimulacoes();
+        if (!banco.Listar())
         {
-            Console.WriteLine("Nenhum universo salvo em: " + pasta);
-            return null;
+            Console.WriteLine("Nenhuma simulação gravada.");
+            return;
         }
 
-        Console.WriteLine("\nUniversos salvos:");
-        for (int i = 0; i < arquivos.Length; i++)
+        Console.Write("Digite o ID da simulação: ");
+        if (!long.TryParse(Console.ReadLine(), out long id) || id < 1)
         {
-            Console.WriteLine((i + 1) + " - " + Path.GetFileName(arquivos[i]) +
-                              "  (" + File.GetLastWriteTime(arquivos[i]).ToString("dd/MM/yyyy HH:mm:ss") + ")");
+            Console.WriteLine("ID inválido.");
+            return;
         }
 
-        Console.Write("Escolha o numero: ");
-        int escolha;
-        if (!int.TryParse(Console.ReadLine(), out escolha) || escolha < 1 || escolha > arquivos.Length)
+        using MySqlTransaction leitura = banco.IniciarLeitura();
+        Universo universo = banco.Carregar(leitura, id);
+        if (universo == null)
         {
-            Console.WriteLine("Opcao invalida.");
-            return null;
+            Console.WriteLine("Simulação indisponível.");
+            return;
         }
 
-        Armazenamento arq = new ArmazenamentoTxt(arquivos[escolha - 1]);
-        return arq.Carregar();
+        // O replay lê um quadro por vez e nunca recalcula a física.
+        using var quadros = banco.LerQuadros(leitura, id).GetEnumerator();
+        if (!quadros.MoveNext())
+            return;
+
+        universo.Corpos = quadros.Current;
+        using JanelaSimulador janela = new JanelaSimulador(universo, _ =>
+        {
+            if (quadros.MoveNext())
+                universo.Corpos = quadros.Current;
+        });
+        Application.Run(janela);
     }
 }

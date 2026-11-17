@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 
 // Guarda a lista de corpos e roda a simulacao (movimento + colisoes).
@@ -31,17 +32,6 @@ internal class Universo
         }
     }
 
-    // Roda todas as iteracoes, mostrando a situacao de cada uma na tela
-    public void Simular()
-    {
-        Exibir(0); // estado inicial
-        for (int it = 1; it <= QtdIteracoes; it++)
-        {
-            Passo();
-            Exibir(it);
-        }
-    }
-
     // Um passo da simulacao: calcula posicao dos corpos no proximo instante
     public void Passo()
     {
@@ -49,7 +39,8 @@ internal class Universo
 
       
         Vetor[] aceleracoes = new Vetor[Corpos.Count];
-        for (int i = 0; i < Corpos.Count; i++)
+        // Cada tarefa lê as mesmas posições e escreve apenas no seu índice.
+        Parallel.For(0, Corpos.Count, i =>
         {
             Vetor forcaTotal = new Vetor(0, 0);
             for (int j = 0; j < Corpos.Count; j++)
@@ -58,7 +49,7 @@ internal class Universo
                 forcaTotal = forcaTotal + Gravidade.Forca(Corpos[i], Corpos[j]);
             }
             aceleracoes[i] = Gravidade.Aceleracao(forcaTotal, Corpos[i].Massa);
-        }
+        });
 
        
         for (int i = 0; i < Corpos.Count; i++)
@@ -68,6 +59,7 @@ internal class Universo
         }
 
         
+        // A fusão altera a lista, então as colisões mantêm a ordem original.
         TratarColisoes();
     }
 
