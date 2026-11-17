@@ -13,6 +13,7 @@ internal class JanelaSimulador : Form
 
     
     private const double LadoUniverso = 3e8;
+    private const float LimiteDesenho = 32768f;
     private double areaVisivel = LadoUniverso * 1.05;
 
     
@@ -92,6 +93,13 @@ internal class JanelaSimulador : Form
         return new PointF(x, y);
     }
 
+    // Comparações com os limites também rejeitam NaN e infinito.
+    private static bool PodeDesenhar(PointF ponto, float margem = 0)
+    {
+        return Math.Abs(ponto.X) + margem <= LimiteDesenho &&
+               Math.Abs(ponto.Y) + margem <= LimiteDesenho;
+    }
+
     protected override void OnPaint(PaintEventArgs e)
     {
         base.OnPaint(e);
@@ -105,7 +113,8 @@ internal class JanelaSimulador : Form
         double metadeLado = LadoUniverso / 2;
         PointF canto = ParaTela(new Vetor(-metadeLado, metadeLado), escala);
         float ladoPx = (float)(LadoUniverso * escala);
-        g.DrawRectangle(Pens.DimGray, canto.X, canto.Y, ladoPx, ladoPx);
+        if (PodeDesenhar(canto) && PodeDesenhar(new PointF(canto.X + ladoPx, canto.Y + ladoPx)))
+            g.DrawRectangle(Pens.DimGray, canto.X, canto.Y, ladoPx, ladoPx);
 
         foreach (Corpo c in universo.Corpos)
         {
@@ -115,17 +124,31 @@ internal class JanelaSimulador : Form
             List<Vetor> lista = rastros[c.Nome];
             if (lista.Count >= 2)
             {
-                PointF[] pontos = new PointF[lista.Count];
-                for (int i = 0; i < lista.Count; i++)
-                    pontos[i] = ParaTela(lista[i], escala);
+                using Pen caneta = new Pen(Color.FromArgb(120, cor), 1);
+                List<PointF> trecho = new List<PointF>(lista.Count);
+                foreach (Vetor ponto in lista)
+                {
+                    PointF tela = ParaTela(ponto, escala);
+                    if (PodeDesenhar(tela))
+                    {
+                        trecho.Add(tela);
+                        continue;
+                    }
 
-                using (Pen caneta = new Pen(Color.FromArgb(120, cor), 1))
-                    g.DrawLines(caneta, pontos);
+                    // Encerra o trecho para não ligar pontos separados por uma posição inválida.
+                    if (trecho.Count >= 2)
+                        g.DrawLines(caneta, trecho.ToArray());
+                    trecho.Clear();
+                }
+                if (trecho.Count >= 2)
+                    g.DrawLines(caneta, trecho.ToArray());
             }
 
             
             PointF pos = ParaTela(c.Pos, escala);
             float raioPx = (float)Math.Max(4, c.Raio * escala);
+            if (!PodeDesenhar(pos, raioPx + 2))
+                continue;
 
             using (SolidBrush pincel = new SolidBrush(cor))
                 g.FillEllipse(pincel, pos.X - raioPx, pos.Y - raioPx, raioPx * 2, raioPx * 2);
@@ -161,9 +184,11 @@ internal class JanelaSimulador : Form
     {
         base.OnMouseWheel(e);
 
-        if (e.Delta > 0)
-            areaVisivel *= 0.8;  // aproxima
-        else
-            areaVisivel *= 1.25; // afasta
+        if (e.Delta == 0)
+            return;
+
+        double fator = e.Delta > 0 ? 0.8 : 1.25;
+        areaVisivel = Math.Clamp(areaVisivel * fator, LadoUniverso / 8, LadoUniverso * 64);
+        Invalidate();
     }
 }
