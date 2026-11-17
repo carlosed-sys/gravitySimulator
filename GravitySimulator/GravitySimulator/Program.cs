@@ -4,8 +4,6 @@ using MySqlConnector;
 
 internal static class Program
 {
-    private const int MaximoCorpos = 400;
-
     [STAThread]
     private static void Main()
     {
@@ -35,7 +33,7 @@ internal static class Program
     private static void Simular()
     {
         Console.Write("Quantidade de corpos (1 a 400): ");
-        if (!int.TryParse(Console.ReadLine(), out int corpos) || corpos < 1 || corpos > MaximoCorpos)
+        if (!int.TryParse(Console.ReadLine(), out int corpos) || corpos < 1 || corpos > Universo.MaximoCorpos)
         {
             Console.WriteLine("Quantidade de corpos inválida.");
             return;
@@ -48,8 +46,8 @@ internal static class Program
             return;
         }
 
-        Console.Write("Tempo entre iterações (s): ");
-        if (!double.TryParse(Console.ReadLine(), out double dt) || !double.IsFinite(dt) || dt <= 0)
+        Console.Write($"Tempo entre iterações (até {Universo.MaximoSegundosPorIteracao} s): ");
+        if (!double.TryParse(Console.ReadLine(), out double dt) || !double.IsFinite(dt) || dt <= 0 || dt > Universo.MaximoSegundosPorIteracao)
         {
             Console.WriteLine("Intervalo inválido.");
             return;

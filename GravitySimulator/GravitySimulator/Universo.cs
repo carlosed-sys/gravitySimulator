@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 // Guarda a lista de corpos e roda a simulacao (movimento + colisoes).
 internal class Universo
 {
+    public const int MaximoCorpos = 400;
+    public const double MaximoSegundosPorIteracao = 3600;
+    private const double MaximoPassoFisico = 10;
+
     public List<Corpo> Corpos = new List<Corpo>();
     public int QtdIteracoes;
     public double TempoEntreIteracoes; // segundos (dt)
@@ -19,26 +23,44 @@ internal class Universo
         TempoEntreIteracoes = dt;
         Corpos.Clear();
 
-        for (int i = 1; i <= qtdCorpos; i++)
+        // Uma célula por corpo mantém espaço entre as superfícies mesmo com 400 corpos.
+        const int colunas = 20;
+        const double larguraCelula = 1e7;
+        int[] celulas = new int[MaximoCorpos];
+        for (int i = 0; i < celulas.Length; i++)
+            celulas[i] = i;
+        rnd.Shuffle(celulas.AsSpan());
+
+        for (int i = 0; i < qtdCorpos; i++)
         {
-            double massa = 1e23 + rnd.NextDouble() * 1e25;          // 1e23 a ~1e25 kg
+            double massa = 1e21 + rnd.NextDouble() * 9.9e22;        // 1e21 a 1e23 kg
             double densidade = 1000 + rnd.NextDouble() * 7000;      // 1000 a 8000 kg/m^3
-            Vetor pos = new Vetor((rnd.NextDouble() * 2 - 1) * 1e8, // +-1e8 m
-                                  (rnd.NextDouble() * 2 - 1) * 1e8);
+            double x = (celulas[i] % colunas - 9.5) * larguraCelula;
+            double y = (celulas[i] / colunas - 9.5) * larguraCelula;
+            Vetor pos = new Vetor(x + (rnd.NextDouble() * 2 - 1) * 1e6,
+                                  y + (rnd.NextDouble() * 2 - 1) * 1e6);
             Vetor vel = new Vetor((rnd.NextDouble() * 2 - 1) * 50,  // +-50 m/s
                                   (rnd.NextDouble() * 2 - 1) * 50);
 
-            Corpos.Add(new Corpo("Corpo" + i, massa, densidade, pos, vel));
+            Corpos.Add(new Corpo("Corpo" + (i + 1), massa, densidade, pos, vel));
         }
     }
 
     // Um passo da simulacao: calcula posicao dos corpos no proximo instante
     public void Passo()
     {
-        double dt = TempoEntreIteracoes;
+        // Contatos existentes precisam ser fundidos antes de aplicar qualquer força.
+        TratarColisoes(0);
 
-      
+        int passos = (int)Math.Ceiling(TempoEntreIteracoes / MaximoPassoFisico);
+        double dt = TempoEntreIteracoes / passos;
         Vetor[] aceleracoes = new Vetor[Corpos.Count];
+        for (int i = 0; i < passos; i++)
+            AvancarFisica(dt, aceleracoes);
+    }
+
+    private void AvancarFisica(double dt, Vetor[] aceleracoes)
+    {
         // Cada tarefa lê as mesmas posições e escreve apenas no seu índice.
         Parallel.For(0, Corpos.Count, i =>
         {
@@ -60,23 +82,38 @@ internal class Universo
 
         
         // A fusão altera a lista, então as colisões mantêm a ordem original.
-        TratarColisoes();
+        TratarColisoes(dt);
     }
 
     
-    private void TratarColisoes()
+    private void TratarColisoes(double dt)
     {
+        HashSet<Corpo> fundidos = null;
         for (int i = 0; i < Corpos.Count; i++)
         {
             for (int j = i + 1; j < Corpos.Count; j++)
             {
-                double distancia = (Corpos[j].Pos - Corpos[i].Pos).Modulo();
-
-                if (distancia <= Corpos[i].Raio + Corpos[j].Raio)
+                Corpo a = Corpos[i];
+                Corpo b = Corpos[j];
+                Vetor separacao = b.Pos - a.Pos;
+                Vetor deslocamento = (b.Vel - a.Vel) * dt;
+                double quadrado = deslocamento.X * deslocamento.X + deslocamento.Y * deslocamento.Y;
+                if (quadrado > 0 && (fundidos == null || (!fundidos.Contains(a) && !fundidos.Contains(b))))
                 {
-                    Corpos[i] = Fundir(Corpos[i], Corpos[j]);
+                    // A menor distância ao longo do passo detecta corpos que se atravessariam.
+                    double projecao = separacao.X * deslocamento.X + separacao.Y * deslocamento.Y;
+                    separacao -= deslocamento * Math.Clamp(projecao / quadrado, 0, 1);
+                }
+
+                if (separacao.Modulo() <= a.Raio + b.Raio)
+                {
+                    Corpos[i] = Fundir(a, b);
+                    // Um corpo novo ainda não percorreu uma trajetória neste passo.
+                    (fundidos ??= new HashSet<Corpo>()).Add(Corpos[i]);
                     Corpos.RemoveAt(j);
-                    j--; 
+                    // O novo corpo pode tocar um par que já foi examinado.
+                    i = -1;
+                    break;
                 }
             }
         }

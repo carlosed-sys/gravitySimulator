@@ -4,7 +4,7 @@ A versão N1 calcula as forças em sequência e salva apenas o estado inicial e 
 
 ## Método
 
-- N1 a partir do commit `bab1eeca`. N2 a partir dos fontes desta entrega. Ambas foram compiladas em Release com o SDK .NET 8.0.419. O Linux de teste disponibilizou dois processadores lógicos ao .NET.
+- N1 a partir do commit `bab1eeca`. N2 a partir do commit `09bf744`, anterior ao ajuste da geração inicial e das colisões. Ambas foram compiladas em Release com o SDK .NET 8.0.419. O Linux de teste disponibilizou dois processadores lógicos ao .NET.
 - Mesmos corpos iniciais em cada par de execuções, numa grade de 20 colunas com espaçamento de 10 milhões de metros. Massas entre `1e20` e `1.1e20` kg, densidades de 1.000 a 8.000 kg/m³ e velocidades de −50 a 50 m/s, com semente 42. Passo de 3 segundos.
 - Medição com `Stopwatch`, uma rodada inicial de aquecimento e ordem alternada. Interface gráfica e impressão no console ficaram fora das duas medições.
 - Somente física: sete execuções de 500 iterações por versão e por quantidade de corpos. A medição cobre `Passo()` e inclui movimento e fusões. Os estados finais da N1 e da N2 foram comparados campo a campo em todas as execuções.
