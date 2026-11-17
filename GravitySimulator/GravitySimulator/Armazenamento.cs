@@ -3,14 +3,14 @@ using System.Globalization;
 using System.IO;
 
 
-public abstract class Armazenamento
+internal abstract class Armazenamento
 {
     public abstract void Salvar(Universo universo);
     public abstract Universo Carregar();
 }
 
 
-public class ArmazenamentoTxt : Armazenamento
+internal class ArmazenamentoTxt : Armazenamento
 {
     private string caminho;
 

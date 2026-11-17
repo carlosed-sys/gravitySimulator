@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-public struct Vetor
+internal struct Vetor
 {
     public double X;
     public double Y;

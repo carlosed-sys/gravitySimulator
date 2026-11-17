@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-public class Corpo
+internal class Corpo
 {
    
     public const double DENSIDADE_MAXIMA = 4e17;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-public static class Gravidade
+internal static class Gravidade
 {
   
     public const double G = 6.674e-11;

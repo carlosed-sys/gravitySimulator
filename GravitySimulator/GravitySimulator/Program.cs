@@ -3,13 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
-public class Program
+internal class Program
 {
     // Pasta onde ficam todos os universos salvos (fica do lado do .exe)
     private static string pasta = Path.Combine(AppContext.BaseDirectory, "Salvos");
 
     [STAThread] 
-    public static void Main()
+    private static void Main()
     {
         Directory.CreateDirectory(pasta); 
 

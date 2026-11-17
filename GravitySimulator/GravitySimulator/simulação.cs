@@ -4,14 +4,15 @@ using System.Drawing;
 using System.Windows.Forms;
 
 
-public class JanelaSimulador : Form
+internal class JanelaSimulador : Form
 {
     private Universo universo;
     private System.Windows.Forms.Timer timer;
     private int iteracaoAtual = 0;
 
     
-    private double areaVisivel = 3e8;
+    private const double LadoUniverso = 3e8;
+    private double areaVisivel = LadoUniverso * 1.05;
 
     
     private int passosPorQuadro = 5;
@@ -90,6 +91,12 @@ public class JanelaSimulador : Form
 
         // Escala: converte metros em pixels
         double escala = Math.Min(ClientSize.Width, ClientSize.Height) / areaVisivel;
+
+        // A borda é fixa no espaço do universo, com centro em (0, 0).
+        double metadeLado = LadoUniverso / 2;
+        PointF canto = ParaTela(new Vetor(-metadeLado, metadeLado), escala);
+        float ladoPx = (float)(LadoUniverso * escala);
+        g.DrawRectangle(Pens.DimGray, canto.X, canto.Y, ladoPx, ladoPx);
 
         foreach (Corpo c in universo.Corpos)
         {

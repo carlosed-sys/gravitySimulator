@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 
 // Guarda a lista de corpos e roda a simulacao (movimento + colisoes).
-public class Universo
+internal class Universo
 {
     public List<Corpo> Corpos = new List<Corpo>();
     public int QtdIteracoes;
