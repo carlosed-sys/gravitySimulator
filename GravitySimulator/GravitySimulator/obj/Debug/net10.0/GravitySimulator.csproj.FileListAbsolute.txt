@@ -1,0 +1,15 @@
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\bin\Debug\net10.0\GravitySimulator.exe
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\bin\Debug\net10.0\GravitySimulator.deps.json
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\bin\Debug\net10.0\GravitySimulator.runtimeconfig.json
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\bin\Debug\net10.0\GravitySimulator.dll
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\bin\Debug\net10.0\GravitySimulator.pdb
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net10.0\GravitySimulator.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net10.0\GravitySimulator.AssemblyInfoInputs.cache
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net10.0\GravitySimulator.AssemblyInfo.cs
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net10.0\GravitySimulator.csproj.CoreCompileInputs.cache
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net10.0\GravitySimulator.dll
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net10.0\refint\GravitySimulator.dll
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net10.0\GravitySimulator.pdb
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net10.0\GravitySimulator.genruntimeconfig.cache
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net10.0\ref\GravitySimulator.dll
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net10.0\GravityS.FBEBABEB.Up2Date

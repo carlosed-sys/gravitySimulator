@@ -1,0 +1,17 @@
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net8.0-windows\GravitySimulator.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net8.0-windows\GravitySimulator.AssemblyInfoInputs.cache
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net8.0-windows\GravitySimulator.AssemblyInfo.cs
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net8.0-windows\GravitySimulator.csproj.CoreCompileInputs.cache
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\bin\Debug\net8.0-windows\GravitySimulator.exe
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\bin\Debug\net8.0-windows\GravitySimulator.deps.json
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\bin\Debug\net8.0-windows\GravitySimulator.runtimeconfig.json
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\bin\Debug\net8.0-windows\GravitySimulator.dll
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\bin\Debug\net8.0-windows\GravitySimulator.pdb
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net8.0-windows\JanelaSimulador.resources
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net8.0-windows\GravitySimulator.csproj.GenerateResource.cache
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net8.0-windows\GravitySimulator.dll
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net8.0-windows\refint\GravitySimulator.dll
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net8.0-windows\GravitySimulator.pdb
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net8.0-windows\GravitySimulator.genruntimeconfig.cache
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net8.0-windows\ref\GravitySimulator.dll
+C:\Users\carlos\source\repos\GravitySimulator\GravitySimulator\obj\Debug\net8.0-windows\GravityS.FBEBABEB.Up2Date
